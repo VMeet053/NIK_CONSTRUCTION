@@ -1,0 +1,97 @@
+import { Link } from 'react-router-dom'
+
+const footerLinks = [
+  {
+    title: 'Studio',
+    items: [
+      { label: 'About', to: '/about' },
+      { label: 'Services', to: '/services' },
+      { label: 'Achievements', to: '/achievements' },
+    ],
+  },
+  {
+    title: 'Work',
+    items: [
+      { label: 'Projects', to: '/projects' },
+      { label: 'Blog', to: '/blog' },
+      { label: 'Contact', to: '/contact' },
+    ],
+  },
+]
+
+export default function Footer() {
+  return (
+    <footer className="border-t border-gray bg-white py-16">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="grid gap-12 md:grid-cols-3">
+          <div>
+            <h2 className="font-heading mb-4 text-2xl font-bold text-black">
+              Kirti Construction
+            </h2>
+            <p className="mb-4 text-charcoal">
+              Heritage conservation and architecture studio. Preserving historic
+              structures for future generations.
+            </p>
+            <p className="text-sm text-charcoal">
+              Operating across South Asia, Middle East, and Europe
+            </p>
+          </div>
+
+          {footerLinks.map((column) => (
+            <div key={column.title}>
+              <h3 className="mb-4 font-semibold text-black">{column.title}</h3>
+              <ul className="space-y-2">
+                {column.items.map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      to={item.to}
+                      className="text-charcoal transition-colors hover:text-black"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          <div>
+            <h3 className="mb-4 font-semibold text-black">Contact</h3>
+            <ul className="space-y-2 text-charcoal">
+              <li>
+                <a
+                  href="mailto:info@verdantia.com"
+                  className="transition-colors hover:text-black"
+                >
+                  info@kirticonstruction.com
+                </a>
+              </li>
+              <li>
+                <a
+                  href="tel:+911234567890"
+                  className="transition-colors hover:text-black"
+                >
+                  +91 123 456 7890
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-12 border-t border-gray pt-8">
+          <div className="flex flex-col justify-between gap-4 text-sm text-charcoal md:flex-row">
+            <div>© {new Date().getFullYear()} Kirti Construction. All rights reserved.</div>
+            <div className="flex gap-6">
+              <a href="#" className="transition-colors hover:text-black">
+                Privacy
+              </a>
+              <a href="#" className="transition-colors hover:text-black">
+                Terms
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
