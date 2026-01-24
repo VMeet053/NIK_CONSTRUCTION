@@ -34,7 +34,7 @@ const getAboutIcon = (type) => {
 }
 
 export default function About() {
-  const { aboutValues, achievementStats } = useContent()
+  const { aboutValues, achievementStats, stats } = useContent()
   const heroRef = useRef(null)
   const { scrollYProgress } = useScroll({
     target: heroRef,

@@ -20,7 +20,7 @@ function StatItem({ number, label, delay = 0 }) {
   )
 }
 
-export default function StatGrid({ stats, className = '' }) {
+export default function StatGrid({ stats = [], className = '' }) {
   return (
     <div className={`stat-grid ${className}`}>
       {stats.map((stat, idx) => (
