@@ -61,9 +61,9 @@ export default function Navbar() {
           <Link
             to="/contact"
             className="rounded-full bg-black px-6 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-charcoal"
+            style={{ color: '#ffffff' }}
           >
-            Cont
-            act
+            Contact
           </Link>
         </nav>
       </motion.header>
