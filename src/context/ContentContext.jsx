@@ -472,6 +472,7 @@ export const ContentProvider = ({ children }) => {
       processSteps, setProcessSteps,
       achievementStats, setAchievementStats,
       awards, setAwards,
+      certifications, setCertifications,
       articles, setArticles, updateArticle,
       updateImage
     }}>

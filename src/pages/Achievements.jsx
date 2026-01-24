@@ -6,7 +6,7 @@ import StatGrid from '../components/StatGrid'
 import StaggeredText from '../components/StaggeredText'
 
 export default function Achievements() {
-  const { achievementStats, awards, certifications } = useContent()
+  const { achievementStats, awards, certifications = [] } = useContent()
   const containerRef = useRef(null)
   const { scrollYProgress } = useScroll({
     target: containerRef,
