@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import BackToTop from './components/BackToTop'
 import PageTransition from './components/PageTransition'
 import './index.css'
 
@@ -27,6 +28,7 @@ function AppShell() {
         </AnimatePresence>
       </main>
       <Footer />
+      <BackToTop />
     </div>
   )
 }
