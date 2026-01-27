@@ -1,10 +1,12 @@
 import { useState, useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { useContent } from '../context/ContentContext'
 import AnimatedSection from '../components/AnimatedSection'
 import MagneticButton from '../components/MagneticButton'
 import StaggeredText from '../components/StaggeredText'
 
 export default function Contact() {
+  const { contactInfo, contactPageContent } = useContent()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,13 +29,32 @@ export default function Contact() {
     console.log('Form submitted:', formData)
   }
 
+  if (!contactInfo) return null
+
   return (
-    <div className="bg-white">
+    <div className="relative bg-transparent">
+      {/* Fixed Background Image */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <img 
+          src="/bgg.png"
+          alt="Vintage Background"
+          className="h-full w-full object-cover opacity-100"
+          onError={(e) => {
+            const target = e.target;
+            if (target.src.endsWith('bgg.png')) {
+               target.src = 'https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=2000&auto=format&fit=crop';
+            }
+          }}
+        />
+      </div>
+
       {/* Hero Section - Matching Projects Theme */}
       <section ref={heroRef} className="relative overflow-hidden bg-black py-16 text-center text-white lg:py-24">
         <motion.div
           style={{ y }}
-          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920')] bg-cover bg-center opacity-40 fixed-bg"
+          className="absolute inset-0 bg-cover bg-center opacity-40 fixed-bg"
+          initial={{ backgroundImage: `url(${contactPageContent?.hero?.image || 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920'})` }}
+          animate={{ backgroundImage: `url(${contactPageContent?.hero?.image || 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920'})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-white" />
 
@@ -43,14 +64,14 @@ export default function Contact() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 block text-sm font-bold uppercase tracking-[0.3em] text-blue"
           >
-            Contact Us
+            {contactPageContent?.hero?.subtitle || "Contact Us"}
           </motion.span>
           <StaggeredText
-            text="Start a Conversation"
-            className="font-heading mb-6 text-6xl font-black md:text-8xl"
+            text={contactPageContent?.hero?.title || "Start a Conversation"}
+            className="font-heading mb-6 text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black"
           />
-          <p className="mx-auto max-w-2xl text-xl font-light text-gray-200">
-            Whether you have a restoration project in mind or simply want to inquire about our services, we are here to listen.
+          <p className="mx-auto max-w-2xl text-lg sm:text-xl font-light text-gray-200">
+            {contactPageContent?.hero?.description || "Whether you have a restoration project in mind or simply want to inquire about our services, we are here to listen."}
           </p>
 
           <div className="mt-10">
@@ -82,8 +103,8 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="mb-1 font-bold text-black">Phone</h3>
-                    <p className="text-charcoal">+91 123 456 7890</p>
-                    <p className="text-sm text-charcoal/60">Mon-Fri, 9am - 6pm IST</p>
+                    <p className="text-charcoal">{contactInfo.phone}</p>
+                    <p className="text-sm text-charcoal/60">{contactInfo.timings}</p>
                   </div>
                 </div>
 
@@ -93,7 +114,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <h3 className="mb-1 font-bold text-black">Email</h3>
-                    <a href="mailto:info@verdantia.com" className="text-charcoal hover:text-blue transition-colors">info@verdantia.com</a>
+                    <a href={`mailto:${contactInfo.email}`} className="text-charcoal hover:text-blue transition-colors">{contactInfo.email}</a>
                     <p className="text-sm text-charcoal/60">For project inquiries and careers</p>
                   </div>
                 </div>
@@ -105,8 +126,8 @@ export default function Contact() {
                   <div>
                     <h3 className="mb-1 font-bold text-black">Office</h3>
                     <p className="text-charcoal">
-                      123 Heritage Street<br />
-                      River Town, India 380001
+                      {contactInfo?.address?.line1}<br />
+                      {contactInfo?.address?.line2}
                     </p>
                   </div>
                 </div>
@@ -116,8 +137,10 @@ export default function Contact() {
 
           {/* Form Side */}
           <AnimatedSection delay={0.2}>
-            <div className="rounded-3xl border border-gray-100 bg-gray-50 p-8 shadow-sm lg:p-12">
-              <h3 className="font-heading mb-6 text-2xl font-bold text-black">Send us a message</h3>
+            <div className="rounded-3xl border border-white/40 bg-white/60 backdrop-blur-md p-8 shadow-sm lg:p-12">
+              <h2 className="font-heading mb-8 text-3xl font-bold text-black">
+                Send a Message
+              </h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="name" className="mb-2 block text-sm font-bold uppercase tracking-wider text-charcoal/60">Name</label>
@@ -169,7 +192,7 @@ export default function Contact() {
       {/* Map Section */}
       <section className="h-[500px] w-full bg-gray-200">
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d117498.05581299387!2d72.48347209822606!3d23.02905445217436!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e848aba5bd449%3A0x4fcedd11614f6516!2sAhmedabad%2C%20Gujarat!5e0!3m2!1sen!2sin!4v1710338781297!5m2!1sen!2sin"
+          src={contactInfo.mapUrl}
           width="100%"
           height="100%"
           style={{ border: 0, filter: 'grayscale(100%) invert(90%)' }}

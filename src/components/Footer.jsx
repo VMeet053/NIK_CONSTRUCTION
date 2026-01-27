@@ -1,39 +1,42 @@
-import { Link } from 'react-router-dom'
 
-const footerLinks = [
-  {
-    title: 'Studio',
-    items: [
-      { label: 'About', to: '/about' },
-      { label: 'Services', to: '/services' },
-      { label: 'Achievements', to: '/achievements' },
-    ],
-  },
-  {
-    title: 'Work',
-    items: [
-      { label: 'Projects', to: '/projects' },
-      { label: 'Blog', to: '/blog' },
-      { label: 'Contact', to: '/contact' },
-    ],
-  },
-]
+import { Link } from 'react-router-dom'
+import { useContent } from '../context/ContentContext'
 
 export default function Footer() {
+  const { contactInfo, footerContent } = useContent()
+
+  const footerLinks = [
+    {
+      title: footerContent?.column1Title || 'Studio',
+      items: [
+        { label: 'About', to: '/about' },
+        { label: 'Services', to: '/services' },
+        { label: 'Achievements', to: '/achievements' },
+      ],
+    },
+    {
+      title: footerContent?.column2Title || 'Work',
+      items: [
+        { label: 'Projects', to: '/projects' },
+        { label: 'Blog', to: '/blog' },
+        { label: 'Contact', to: '/contact' },
+      ],
+    },
+  ]
+  
   return (
     <footer className="border-t border-gray bg-white py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid gap-12 md:grid-cols-3">
+        <div className="grid gap-12 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <h2 className="font-heading mb-4 text-2xl font-bold text-black">
-              Kirti Construction
+              {footerContent?.companyName || 'Kirti Construction'}
             </h2>
             <p className="mb-4 text-charcoal">
-              Heritage conservation and architecture studio. Preserving historic
-              structures for future generations.
+              {footerContent?.description || 'Heritage conservation and architecture studio. Preserving historic structures for future generations.'}
             </p>
             <p className="text-sm text-charcoal">
-              Operating across South Asia, Middle East, and Europe
+              {footerContent?.operatingRegions || 'Operating across South Asia, Middle East, and Europe'}
             </p>
           </div>
 
@@ -60,18 +63,18 @@ export default function Footer() {
             <ul className="space-y-2 text-charcoal">
               <li>
                 <a
-                  href="mailto:info@verdantia.com"
+                  href={`mailto:${contactInfo?.email}`}
                   className="transition-colors hover:text-black"
                 >
-                  info@kirticonstruction.com
+                  {contactInfo?.email || 'info@kirticonstruction.com'}
                 </a>
               </li>
               <li>
                 <a
-                  href="tel:+911234567890"
+                  href={`tel:${contactInfo?.phone}`}
                   className="transition-colors hover:text-black"
                 >
-                  +91 123 456 7890
+                  {contactInfo?.phone || '+91 123 456 7890'}
                 </a>
               </li>
             </ul>
@@ -80,7 +83,9 @@ export default function Footer() {
 
         <div className="mt-12 border-t border-gray pt-8">
           <div className="flex flex-col justify-between gap-4 text-sm text-charcoal md:flex-row">
-            <div>© {new Date().getFullYear()} Kirti Construction. All rights reserved.</div>
+            <div>
+              {footerContent?.copyrightText || `© ${new Date().getFullYear()} Kirti Construction. All rights reserved.`}
+            </div>
             <div className="flex gap-6">
               <a href="#" className="transition-colors hover:text-black">
                 Privacy

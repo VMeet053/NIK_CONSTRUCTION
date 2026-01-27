@@ -1,11 +1,16 @@
 
 import { useState } from 'react';
 import { useContent } from '../../context/ContentContext';
+import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import AdminTable from '../../components/AdminTable';
 import EditModal from '../../components/EditModal';
+import AdminPageHeader from '../../components/AdminPageHeader';
 
 export default function AdminAchievements() {
   const { awards, setAwards, updateImage } = useContent();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
 
@@ -37,21 +42,35 @@ export default function AdminAchievements() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (item) => {
-    if (window.confirm('Are you sure you want to delete this achievement?')) {
-      setAwards(prev => prev.filter(a => a.id !== item.id));
+  const handleDelete = async (item) => {
+    if (await confirm({
+      title: 'Delete Achievement',
+      message: 'Are you sure you want to delete this achievement?'
+    })) {
+      try {
+        setAwards(prev => prev.filter(a => a.id !== item.id));
+        showToast('Achievement deleted successfully', 'success');
+      } catch (error) {
+        showToast('Failed to delete achievement', 'error');
+      }
     }
   };
 
   const handleSave = (formData) => {
-    if (currentItem.id) {
-      setAwards(prev => prev.map(a => a.id === currentItem.id ? { ...a, ...formData } : a));
-    } else {
-      setAwards(prev => [...prev, {
-        ...formData,
-        id: Date.now(),
-        image: 'https://images.unsplash.com/photo-1562916132-841bc6c47866?w=800' // Default
-      }]);
+    try {
+      if (currentItem.id) {
+        setAwards(prev => prev.map(a => a.id === currentItem.id ? { ...a, ...formData } : a));
+        showToast('Achievement updated successfully', 'success');
+      } else {
+        setAwards(prev => [...prev, {
+          ...formData,
+          id: Date.now(),
+          image: 'https://images.unsplash.com/photo-1562916132-841bc6c47866?w=800' // Default
+        }]);
+        showToast('Achievement created successfully', 'success');
+      }
+    } catch (error) {
+      showToast('Failed to save achievement', 'error');
     }
   };
 
@@ -64,7 +83,12 @@ export default function AdminAchievements() {
       if (file) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          updateImage('awards', item.id, reader.result);
+          try {
+            updateImage('awards', item.id, reader.result);
+            showToast('Image updated successfully', 'success');
+          } catch (error) {
+            showToast('Failed to update image', 'error');
+          }
         };
         reader.readAsDataURL(file);
       }
@@ -72,20 +96,26 @@ export default function AdminAchievements() {
     input.click();
   };
 
+  const categories = [...new Set(awards.map(a => a.category))].filter(Boolean);
+  const years = [...new Set(awards.map(a => a.year))].filter(Boolean).sort().reverse();
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Achievements Management</h2>
+      <AdminPageHeader 
+        title="Achievements Management" 
+        stats={`${awards.length} Awards Won`}
+        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>}
+      >
         <button 
           onClick={handleAdd}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-md"
+          className="px-4 py-2 bg-amber-500 text-black rounded-lg hover:bg-amber-400 transition-colors flex items-center gap-2 shadow-md font-bold"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
           Add New Achievement
         </button>
-      </div>
+      </AdminPageHeader>
 
       <AdminTable 
         columns={columns} 
@@ -93,6 +123,11 @@ export default function AdminAchievements() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onImageChange={handleImageChange}
+        searchable={true}
+        filters={[
+          { key: 'category', label: 'Category', options: categories },
+          { key: 'year', label: 'Year', options: years }
+        ]}
       />
 
       <EditModal

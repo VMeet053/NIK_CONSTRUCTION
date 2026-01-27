@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import BackToTop from './components/BackToTop'
+import WhatsAppButton from './components/WhatsAppButton'
 import PageTransition from './components/PageTransition'
 import './index.css'
 
@@ -28,6 +29,7 @@ function AppShell() {
         </AnimatePresence>
       </main>
       <Footer />
+      <WhatsAppButton />
       <BackToTop />
     </div>
   )

@@ -1,11 +1,16 @@
 
 import { useState } from 'react';
 import { useContent } from '../../context/ContentContext';
+import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import AdminTable from '../../components/AdminTable';
 import EditModal from '../../components/EditModal';
+import AdminPageHeader from '../../components/AdminPageHeader';
 
 export default function AdminTestimonials() {
   const { testimonials, setTestimonials, updateTestimonial, updateImage } = useContent();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
 
@@ -35,21 +40,35 @@ export default function AdminTestimonials() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (item) => {
-    if (window.confirm('Are you sure you want to delete this testimonial?')) {
-      setTestimonials(prev => prev.filter(t => t.id !== item.id));
+  const handleDelete = async (item) => {
+    if (await confirm({
+      title: 'Delete Testimonial',
+      message: 'Are you sure you want to delete this testimonial?'
+    })) {
+      try {
+        setTestimonials(prev => prev.filter(t => t.id !== item.id));
+        showToast('Testimonial deleted successfully', 'success');
+      } catch (error) {
+        showToast('Failed to delete testimonial', 'error');
+      }
     }
   };
 
   const handleSave = (formData) => {
-    if (currentItem.id) {
-      updateTestimonial(currentItem.id, formData);
-    } else {
-      setTestimonials(prev => [...prev, {
-        ...formData,
-        id: Date.now(),
-        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200' // Default
-      }]);
+    try {
+      if (currentItem.id) {
+        updateTestimonial(currentItem.id, formData);
+        showToast('Testimonial updated successfully', 'success');
+      } else {
+        setTestimonials(prev => [...prev, {
+          ...formData,
+          id: Date.now(),
+          image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200' // Default
+        }]);
+        showToast('Testimonial created successfully', 'success');
+      }
+    } catch (error) {
+      showToast('Failed to save testimonial', 'error');
     }
   };
 
@@ -62,7 +81,12 @@ export default function AdminTestimonials() {
       if (file) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          updateImage('testimonials', item.id, reader.result);
+          try {
+            updateImage('testimonials', item.id, reader.result);
+            showToast('Image updated successfully', 'success');
+          } catch (error) {
+            showToast('Failed to update image', 'error');
+          }
         };
         reader.readAsDataURL(file);
       }
@@ -72,18 +96,21 @@ export default function AdminTestimonials() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Testimonials Management</h2>
+      <AdminPageHeader 
+        title="Testimonials Management" 
+        stats={`${testimonials.length} Testimonials`}
+        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>}
+      >
         <button 
           onClick={handleAdd}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-md"
+          className="px-4 py-2 bg-amber-500 text-black rounded-lg hover:bg-amber-400 transition-colors flex items-center gap-2 shadow-md font-bold"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
           Add New Testimonial
         </button>
-      </div>
+      </AdminPageHeader>
 
       <AdminTable 
         columns={columns} 
@@ -91,6 +118,7 @@ export default function AdminTestimonials() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onImageChange={handleImageChange}
+        searchable={true}
       />
 
       <EditModal

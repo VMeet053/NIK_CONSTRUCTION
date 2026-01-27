@@ -18,11 +18,7 @@ export default function ServicesAdmin() {
     input.onchange = (e) => {
       const file = e.target.files[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          updateImage('services', item.id, reader.result);
-        };
-        reader.readAsDataURL(file);
+        updateImage('services', item.id, file);
       }
     };
     input.click();

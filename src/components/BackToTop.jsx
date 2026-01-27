@@ -32,7 +32,7 @@ export default function BackToTop() {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow-lg transition-colors hover:bg-charcoal focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
+          className="fixed bottom-28 right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow-lg transition-colors hover:bg-charcoal focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
           aria-label="Back to top"
         >
           <svg

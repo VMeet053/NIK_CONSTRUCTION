@@ -46,7 +46,7 @@ const getServiceIcon = (type) => {
 };
 
 export default function Services() {
-  const { services, processSteps } = useContent()
+  const { services, processSteps, servicesPageContent } = useContent()
   
   const heroRef = useRef(null)
   const { scrollYProgress } = useScroll({
@@ -56,12 +56,29 @@ export default function Services() {
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%'])
 
   return (
-    <div className="bg-white">
+    <div className="relative bg-transparent">
+      {/* Fixed Background Image */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <img 
+          src="/bgg.png"
+          alt="Vintage Background"
+          className="h-full w-full object-cover opacity-100"
+          onError={(e) => {
+            const target = e.target;
+            if (target.src.endsWith('bgg.png')) {
+               target.src = 'https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=2000&auto=format&fit=crop';
+            }
+          }}
+        />
+      </div>
+
       {/* Consistent Hero Section */}
       <section ref={heroRef} className="relative overflow-hidden bg-black py-16 text-center text-white lg:py-24">
         <motion.div
           style={{ y }}
-          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1548761208-b7896a6ff225?w=1920')] bg-cover bg-center opacity-40 fixed-bg"
+          className={`absolute inset-0 bg-cover bg-center opacity-40 fixed-bg`}
+          initial={{ backgroundImage: `url(${servicesPageContent?.hero?.image || 'https://images.unsplash.com/photo-1548761208-b7896a6ff225?w=1920'})` }}
+          animate={{ backgroundImage: `url(${servicesPageContent?.hero?.image || 'https://images.unsplash.com/photo-1548761208-b7896a6ff225?w=1920'})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-white" />
 
@@ -71,14 +88,14 @@ export default function Services() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 block text-sm font-bold uppercase tracking-[0.3em] text-blue"
           >
-            Services & Expertise
+            {servicesPageContent?.hero?.subtitle !== undefined ? servicesPageContent.hero.subtitle : "Services & Expertise"}
           </motion.span>
           <StaggeredText
-            text="The Art of Restoration"
-            className="font-heading mb-6 text-5xl font-black md:text-8xl"
+            text={servicesPageContent?.hero?.title !== undefined ? servicesPageContent.hero.title : "The Art of Restoration"}
+            className="font-heading mb-6 text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black"
           />
           <p className="mx-auto max-w-2xl text-xl font-light text-gray-200">
-            From microscopic material analysis to masterplanning entire precincts, we bring precision and passion to every layer of heritage conservation.
+            {servicesPageContent?.hero?.description !== undefined ? servicesPageContent.hero.description : "From microscopic material analysis to masterplanning entire precincts, we bring precision and passion to every layer of heritage conservation."}
           </p>
         </div>
       </section>
@@ -90,10 +107,10 @@ export default function Services() {
             <AnimatedSection key={service.title} className="h-full">
               <motion.div
                 whileHover={{ y: -10 }}
-                className="group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-gray-100 bg-white p-8 shadow-lg transition-all hover:border-blue hover:shadow-2xl"
+                className="group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-white/40 bg-white/60 backdrop-blur-md p-8 shadow-lg transition-all hover:border-white/60 hover:shadow-2xl hover:bg-white/80"
               >
                 <div>
-                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50 text-black transition-colors group-hover:bg-blue group-hover:text-white">
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/50 text-black transition-colors group-hover:bg-blue group-hover:text-white">
                     {getServiceIcon(service.iconType)}
                   </div>
                   <h3 className="font-heading mb-3 text-2xl font-bold text-black group-hover:text-blue">
@@ -161,13 +178,13 @@ export default function Services() {
       <section className="bg-black py-16 text-center text-white">
         <div className="mx-auto max-w-3xl px-6">
           <h2 className="font-heading mb-6 text-4xl font-black md:text-6xl">
-            Start your preservation journey.
+            {servicesPageContent?.cta?.title || "Start your preservation journey."}
           </h2>
           <p className="mb-10 text-xl text-gray-400">
-            Let's collaborate to protect and revitalize your heritage asset.
+            {servicesPageContent?.cta?.description || "Let's collaborate to protect and revitalize your heritage asset."}
           </p>
           <MagneticButton to="/contact" className="inline-block rounded-full bg-white px-10 py-5 font-bold uppercase tracking-widest text-black transition-transform hover:scale-105">
-            Consult with Us
+            {servicesPageContent?.cta?.buttonText || "Consult with Us"}
           </MagneticButton>
         </div>
       </section>

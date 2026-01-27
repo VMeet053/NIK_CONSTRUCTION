@@ -24,7 +24,7 @@ export default function Testimonials() {
   }, [])
 
   return (
-    <section className="bg-gray-light py-16">
+    <section className="bg-transparent py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -48,7 +48,7 @@ export default function Testimonials() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -40 }}
               transition={{ duration: 0.5 }}
-              className="relative overflow-hidden rounded-3xl bg-black text-white shadow-2xl"
+              className="relative overflow-hidden rounded-3xl bg-black/80 backdrop-blur-md text-white shadow-2xl border border-white/10"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue/30 via-black/40 to-black" />
               <div className="relative p-10 md:p-14">
@@ -78,14 +78,20 @@ export default function Testimonials() {
                   “{active.quote}”
                 </motion.blockquote>
                 <div className="flex items-center gap-4">
-                  <motion.img
-                    src={active.image}
-                    alt={active.name}
-                    className="h-16 w-16 rounded-full object-cover ring-2 ring-white/40"
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.25, type: 'spring', stiffness: 200 }}
-                  />
+                  {active.image ? (
+                    <motion.img
+                      src={active.image}
+                      alt={active.name}
+                      className="h-16 w-16 rounded-full object-cover ring-2 ring-white/40"
+                      initial={{ scale: 0.9 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.25, type: 'spring', stiffness: 200 }}
+                    />
+                  ) : (
+                    <div className="h-16 w-16 rounded-full bg-blue flex items-center justify-center ring-2 ring-white/40 text-xl font-bold text-white">
+                      {active.name.charAt(0)}
+                    </div>
+                  )}
                   <div>
                     <div className="text-lg font-semibold">{active.name}</div>
                     <div className="text-sm text-gray-300">
@@ -127,8 +133,8 @@ export default function Testimonials() {
                   key={testimonial.id}
                   onClick={() => setActiveIndex(idx)}
                   className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all duration-300 ${isActive
-                      ? 'border-black bg-white shadow-lg shadow-black/10'
-                      : 'border-transparent bg-white/70 hover:-translate-y-0.5 hover:border-gray'
+                      ? 'border-black bg-white shadow-xl shadow-black/10 scale-[1.02]'
+                      : 'border-white/50 bg-white/80 backdrop-blur-xl hover:bg-white/95 hover:shadow-md hover:border-white/80'
                     }`}
                   aria-label={`Read testimonial from ${testimonial.name}`}
                 >

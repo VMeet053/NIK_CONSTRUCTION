@@ -17,11 +17,7 @@ export default function ClientsAdmin() {
     input.onchange = (e) => {
       const file = e.target.files[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          updateImage('clients', item.id, reader.result);
-        };
-        reader.readAsDataURL(file);
+        updateImage('clients', item.id, file);
       }
     };
     input.click();

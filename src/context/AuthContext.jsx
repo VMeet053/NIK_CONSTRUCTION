@@ -15,27 +15,44 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage for persisted session
-    const storedAuth = localStorage.getItem('isAdminAuthenticated');
+    // Check sessionStorage for persisted session (survives refresh, clears on close)
+    const storedAuth = sessionStorage.getItem('isAdminAuthenticated');
     if (storedAuth === 'true') {
       setIsAuthenticated(true);
     }
     setLoading(false);
   }, []);
 
-  const login = (username, password) => {
-    // Hardcoded credentials for demonstration
-    if (username === 'admin' && password === 'verdantia2024') {
-      setIsAuthenticated(true);
-      localStorage.setItem('isAdminAuthenticated', 'true');
-      return true;
+  const login = async (username, password) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsAuthenticated(true);
+        sessionStorage.setItem('isAdminAuthenticated', 'true');
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('isAdminAuthenticated');
+    sessionStorage.removeItem('isAdminAuthenticated');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
   };
 
   return (

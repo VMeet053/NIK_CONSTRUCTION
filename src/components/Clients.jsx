@@ -2,13 +2,13 @@ import { motion } from 'framer-motion'
 import { useContent } from '../context/ContentContext'
 
 const ClientCard = ({ client }) => (
-  <div className="flex h-24 w-60 flex-row items-center gap-4 rounded-xl border border-gray/50 bg-gray-50 px-4 py-2 shadow-sm transition-all hover:border-blue hover:bg-white hover:shadow-md">
-    <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-white text-2xl shadow-sm">
+  <div className="flex h-24 w-60 flex-row items-center gap-4 rounded-xl border border-white/40 bg-white/60 backdrop-blur-md px-4 py-2 shadow-sm transition-all hover:scale-105 hover:bg-white/80 hover:shadow-lg hover:border-white/60">
+    <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-white/80 text-2xl shadow-sm border border-white/50">
       {client.logo}
     </div>
     <div className="flex flex-col text-left">
       <span className="text-sm font-bold text-black">{client.name}</span>
-      <span className="text-xs text-charcoal/60">{client.category}</span>
+      <span className="text-xs text-charcoal/70">{client.category}</span>
     </div>
   </div>
 )
@@ -40,7 +40,7 @@ export default function Clients() {
   const row2 = clients.slice(4)
 
   return (
-    <section className="bg-white py-16 overflow-hidden">
+    <section className="bg-transparent py-16 overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

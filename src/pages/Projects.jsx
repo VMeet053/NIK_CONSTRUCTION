@@ -19,13 +19,19 @@ const ProjectItem = ({ project, idx }) => {
       {/* Visual Section - Large Image */}
       <div className="relative w-full lg:w-3/5">
         <div className="group relative aspect-[16/10] overflow-hidden rounded-3xl shadow-2xl">
-          <motion.img
-            src={project.image}
-            alt={project.title}
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.7 }}
-            className="h-full w-full object-cover"
-          />
+          {project.image ? (
+            <motion.img
+              src={project.image}
+              alt={project.title}
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.7 }}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center bg-gray-200 text-gray-400">
+              <span className="text-6xl">🏗️</span>
+            </div>
+          )}
           {/* Detailed Image Overlay */}
           <div className="absolute inset-0 bg-black/20 transition-opacity duration-300 group-hover:bg-black/10" />
 
@@ -104,7 +110,7 @@ const ProjectItem = ({ project, idx }) => {
 }
 
 export default function Projects() {
-  const { projects } = useContent()
+  const { projects, projectsPageContent } = useContent()
   const [activeCategory, setActiveCategory] = useState('All')
 
   const categories = ['All', ...new Set(projects.map(p => p.category))]
@@ -115,10 +121,29 @@ export default function Projects() {
       : projects.filter((p) => p.category === activeCategory)
 
   return (
-    <div className="bg-white">
+    <div className="relative bg-transparent">
+      {/* Fixed Background Image */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <img 
+          src="/bgg.png"
+          alt="Vintage Background"
+          className="h-full w-full object-cover opacity-100"
+          onError={(e) => {
+            const target = e.target;
+            if (target.src.endsWith('bgg.png')) {
+               target.src = 'https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=2000&auto=format&fit=crop';
+            }
+          }}
+        />
+      </div>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-black py-16 text-center text-white lg:py-24">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1920')] bg-cover bg-center opacity-30 fixed-bg" />
+        <motion.div 
+            className="absolute inset-0 bg-cover bg-center opacity-30 fixed-bg"
+            initial={{ backgroundImage: `url(${projectsPageContent?.hero?.image || 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1920'})` }}
+            animate={{ backgroundImage: `url(${projectsPageContent?.hero?.image || 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1920'})` }}
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-white" />
 
         <div className="relative z-10 mx-auto max-w-4xl px-6">
@@ -127,26 +152,26 @@ export default function Projects() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 block text-sm font-bold uppercase tracking-[0.3em] text-blue"
           >
-            Our Portfolio
+            {projectsPageContent?.hero?.subtitle !== undefined ? projectsPageContent.hero.subtitle : "Our Portfolio"}
           </motion.span>
           <StaggeredText
-            text="Preserving the Past"
-            className="font-heading mb-6 text-6xl font-black md:text-8xl"
+            text={projectsPageContent?.hero?.title !== undefined ? projectsPageContent.hero.title : "Preserving the Past"}
+            className="font-heading mb-6 text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black"
           />
-          <p className="mx-auto max-w-2xl text-xl font-light text-gray-200">
-            A journey through our archival documentation, structural conservation, and adaptive reuse projects.
+          <p className="mx-auto max-w-2xl text-lg sm:text-xl font-light text-gray-200">
+            {projectsPageContent?.hero?.description !== undefined ? projectsPageContent.hero.description : "A journey through our archival documentation, structural conservation, and adaptive reuse projects."}
           </p>
         </div>
       </section>
 
       {/* Filter Section */}
       <section className="sticky top-20 z-40 bg-white/80 backdrop-blur-md border-b border-gray/20 py-4">
-        <div className="mx-auto flex max-w-7xl justify-center gap-2 px-6 overflow-x-auto">
+        <div className="mx-auto flex max-w-7xl justify-start md:justify-center gap-2 px-6 overflow-x-auto no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`rounded-full px-6 py-2 text-sm font-bold uppercase tracking-wider transition-all hover:bg-black hover:text-white ${activeCategory === cat ? 'bg-black text-white' : 'bg-gray-100 text-charcoal'
+              className={`whitespace-nowrap rounded-full px-6 py-2 text-sm font-bold uppercase tracking-wider transition-all hover:bg-black hover:text-white ${activeCategory === cat ? 'bg-black text-white' : 'bg-gray-100 text-charcoal'
                 }`}
             >
               {cat}

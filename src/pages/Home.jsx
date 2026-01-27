@@ -12,7 +12,6 @@ import IndiaMap from '../components/IndiaMap'
 import Testimonials from '../components/Testimonials'
 import Clients from '../components/Clients'
 
-// Icon mapping helper
 const getServiceIcon = (type) => {
   const icons = {
     conservation: (
@@ -51,10 +50,8 @@ const getServiceIcon = (type) => {
 };
 
 export default function Home() {
-  const { heroContent, stats, projects, services } = useContent();
-  const featuredProjects = projects.filter(p => p.featured).slice(0, 5);
-  const displayServices = services.map(s => ({ ...s, icon: getServiceIcon(s.iconType) })).slice(0, 4);
-
+  const { heroContent, stats, projects, services, homeGeneral, loading } = useContent();
+  
   const heroRef = useRef(null)
   const [heroIndex, setHeroIndex] = useState(0)
   const [activeProject, setActiveProject] = useState(0)
@@ -68,31 +65,74 @@ export default function Home() {
 
   // Preload all images for smooth transitions
   useEffect(() => {
-    heroContent.forEach((item) => {
-      const image = new Image()
-      image.src = item.src
-    })
-  }, [])
+    if (heroContent && heroContent.length > 0) {
+      heroContent.forEach((item) => {
+        const image = new Image()
+        image.src = item.src
+      })
+    }
+  }, [heroContent])
 
   // Auto-rotate background images
   useEffect(() => {
-    const timer = setInterval(() => {
-      setHeroIndex((prev) => (prev + 1) % heroContent.length)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [])
+    if (heroContent && heroContent.length > 0) {
+      const timer = setInterval(() => {
+        setHeroIndex((prev) => (prev + 1) % heroContent.length)
+      }, 5000)
+      return () => clearInterval(timer)
+    }
+  }, [heroContent])
+
+  // Reset index if out of bounds (e.g. after deletion)
+  useEffect(() => {
+    if (heroContent && heroContent.length > 0 && heroIndex >= heroContent.length) {
+      setHeroIndex(0);
+    }
+  }, [heroContent, heroIndex]);
+
+  if (loading && !homeGeneral?.hero && (!heroContent || heroContent.length === 0)) {
+      return (
+          <div className="h-screen w-full flex items-center justify-center bg-black">
+              <div className="flex flex-col items-center gap-4">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-800 border-t-amber-600"></div>
+                  <p className="text-gray-500 font-medium tracking-widest uppercase text-sm">Loading Heritage...</p>
+              </div>
+          </div>
+      );
+  }
+
+  const featuredProjects = projects.filter(p => p.featured).slice(0, 5);
+  const displayServices = services.map(s => ({ ...s, icon: getServiceIcon(s.iconType) })).slice(0, 4);
 
   return (
-    <div className="relative bg-white">
+    <div className="relative bg-transparent">
+      {/* Fixed Background Image */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <img 
+          src="/bgg.png"
+          alt="Vintage Background"
+          className="h-full w-full object-cover opacity-100"
+          onError={(e) => {
+            const target = e.target;
+            if (target.src.endsWith('bgg.png')) {
+               // Fallback to the Unsplash image if local png fails
+               target.src = 'https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=2000&auto=format&fit=crop';
+            }
+          }}
+        />
+        {/* Optional overlay for better text readability if needed */}
+        {/* <div className="absolute inset-0 bg-white/10" /> */}
+      </div>
+
       {/* 1. Immersive Center-Aligned Hero */}
-      <section ref={heroRef} className="hero-fullscreen relative overflow-hidden bg-black text-white">
+      <section ref={heroRef} className="hero-fullscreen relative overflow-hidden bg-black text-white z-10">
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
           className="absolute inset-0"
         >
           {heroContent.map((item, idx) => (
             <motion.div
-              key={item.src}
+              key={item.id || item.src || idx}
               initial={false}
               animate={{
                 opacity: idx === heroIndex ? 1 : 0,
@@ -102,24 +142,36 @@ export default function Home() {
                 duration: 2.0,
                 ease: [0.4, 0, 0.2, 1],
               }}
-              className="absolute inset-0"
+              className="absolute inset-0 bg-gray-900"
             >
-              <div className="absolute inset-0 bg-black/40" />
-              <motion.img
-                src={item.src}
-                alt={item.alt}
-                className="h-full w-full object-cover"
-                initial={false}
-                animate={{
-                  x: idx === heroIndex ? [0, 0] : 0,
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/90" />
+              {item.src ? (
+                <motion.img
+                  src={item.src}
+                  alt={item.alt}
+                  className="h-full w-full object-fill md:object-cover"
+                  initial={false}
+                  animate={{
+                    x: idx === heroIndex ? [0, 0] : 0,
+                  }}
+                />
+              ) : (
+                <motion.img
+                  src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1920&auto=format&fit=crop"
+                  alt="Construction Heritage Placeholder"
+                  className="h-full w-full object-cover opacity-60"
+                  initial={false}
+                  animate={{
+                    x: idx === heroIndex ? [0, 0] : 0,
+                  }}
+                />
+              )}
+              {/* Lighter gradient for mobile visibility */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent/10 to-black/60 md:from-black/80 md:via-transparent md:to-black/90" />
             </motion.div>
           ))}
         </motion.div>
 
-        <div className="relative z-10 flex h-full min-h-[85vh] flex-col items-center justify-center px-6 text-center">
+        <div className="relative z-10 flex h-full min-h-[65vh] md:min-h-[85vh] flex-col items-center justify-center px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -139,7 +191,7 @@ export default function Home() {
                 transition={{ delay: 0.5 }}
                 className="text-sm font-bold uppercase tracking-[0.3em] text-blue"
               >
-                Est. 1986
+                {homeGeneral.hero.established}
               </motion.span>
               <motion.div
                 initial={{ width: 0 }}
@@ -149,22 +201,23 @@ export default function Home() {
               />
             </div>
 
-            <div className="mb-10 min-h-[160px] flex items-center justify-center">
+            <div className="mb-10 min-h-[120px] md:min-h-[160px] flex items-center justify-center">
               <StaggeredText
                 key={heroIndex}
-                text={heroContent[heroIndex].text}
-                className="hero-headline font-heading text-6xl font-black leading-[0.9] text-white md:text-[7rem]"
+                text={heroContent[heroIndex]?.text !== undefined ? heroContent[heroIndex].text : homeGeneral.hero.title}
+                className="hero-headline font-heading text-4xl sm:text-5xl md:text-6xl lg:text-[7rem] font-black leading-[0.9] text-white"
                 delay={0.2}
               />
             </div>
 
             <motion.p
+              key={heroIndex}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="mx-auto mb-12 max-w-2xl text-xl font-light leading-relaxed text-gray-200 md:text-2xl"
+              className="mx-auto mb-12 max-w-2xl text-lg sm:text-xl font-light leading-relaxed text-gray-200 md:text-2xl px-4"
             >
-              We conserve, restore, and adapt historic buildings for the next century. Precision-driven work across four decades.
+              {heroContent[heroIndex]?.description !== undefined ? heroContent[heroIndex].description : homeGeneral.hero.description1}
             </motion.p>
 
             {/* FIXED BUTTONS */}
@@ -186,9 +239,9 @@ export default function Home() {
 
               <MagneticButton
                 to="/contact"
-                className="group flex min-w-[200px] items-center justify-center rounded-full border border-white/30 bg-black/40 px-8 py-4 font-bold text-white backdrop-blur-sm transition-all hover:bg-white/10"
+                className="group flex min-w-[200px] items-center justify-center rounded-full border border-white/30 bg-black/60 px-8 py-4 font-bold text-white backdrop-blur-sm transition-all hover:bg-white/10"
               >
-                <span>Get in Touch</span>
+                <span className="text-white">Get in Touch</span>
               </MagneticButton>
             </motion.div>
 
@@ -233,22 +286,22 @@ export default function Home() {
       </section>
 
       {/* 2. Intro & Stats Section */}
-      <section className="relative bg-white py-20">
+      <section className="relative bg-transparent py-20">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <AnimatedSection>
-              <div className="mb-6 flex items-center gap-4">
+              <div className="mb-4 flex items-center gap-3">
                 <span className="h-px w-12 bg-blue"></span>
-                <span className="text-sm font-bold uppercase tracking-[0.2em] text-blue">The Studio</span>
+                <span className="text-sm font-bold uppercase tracking-[0.2em] text-blue">{homeGeneral.hero.subtitle}</span>
               </div>
               <h2 className="font-heading mb-8 text-5xl font-bold leading-tight text-black lg:text-6xl">
-                Precision meets <br /><span className="text-charcoal/50">Preservation.</span>
+                {homeGeneral.hero.title}
               </h2>
               <p className="text-xl leading-relaxed text-charcoal">
-                Verdantia is a heritage conservation and architecture studio dedicated to the precise, methodical work of keeping historic structures alive.
+                {homeGeneral.hero.description1}
               </p>
               <p className="mt-6 text-lg text-charcoal/70">
-                From temple towns and forts to civic archives, we work quietly behind the scenes so that places can continue to hold memory.
+                {homeGeneral.hero.description2}
               </p>
 
               <div className="mt-10 pt-10 border-t border-gray-100">
@@ -257,16 +310,24 @@ export default function Home() {
             </AnimatedSection>
 
             <AnimatedSection delay={0.2}>
-              <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-gray-100 shadow-2xl">
-                <img
-                  src="https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=1200"
-                  alt="Architectural Detail"
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="relative aspect-[4/5] overflow-hidden rounded-3xl shadow-2xl">
+                {homeGeneral.hero.philosophyImage ? (
+                  <img
+                    src={homeGeneral.hero.philosophyImage}
+                    alt="Architectural Detail"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <img
+                    src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=1920&auto=format&fit=crop"
+                    alt="Philosophy Placeholder"
+                    className="h-full w-full object-cover"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                 <div className="absolute bottom-8 left-8 text-white">
-                  <div className="text-sm font-bold uppercase tracking-widest opacity-80 mb-2">Philosophy</div>
-                  <div className="font-heading text-3xl font-bold">"We don't just fix buildings;<br />we heal them."</div>
+                  <div className="text-sm font-bold uppercase tracking-widest opacity-80 mb-2">{homeGeneral.hero.philosophyTitle}</div>
+                  <div className="font-heading text-3xl font-bold">{homeGeneral.hero.philosophyQuote}</div>
                 </div>
               </div>
             </AnimatedSection>
@@ -275,7 +336,7 @@ export default function Home() {
       </section>
 
       {/* 3. Featured Projects - Creative Grid */}
-      <section className="relative overflow-hidden bg-gray-50 py-16">
+      <section className="relative overflow-hidden bg-transparent py-16">
         <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -296,7 +357,7 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <div className="flex flex-col lg:flex-row gap-4 h-[600px] lg:h-[500px] w-full px-2 lg:px-0">
+          <div className="flex flex-col lg:flex-row gap-4 h-[800px] lg:h-[500px] w-full px-2 lg:px-0">
             {projects.map((project, idx) => (
               <motion.div
                 key={project.title}
@@ -313,13 +374,21 @@ export default function Home() {
               >
                 {/* Background Image */}
                 <div className="absolute inset-0 h-full w-full">
-                  <img
-                    src={project.image}
-                    alt={project.title}
-                    className={`h-full w-full object-cover transition-transform duration-700 ${
-                      activeProject === idx ? 'scale-100' : 'scale-110 grayscale-[50%]'
-                    }`}
-                  />
+                  {project.image ? (
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className={`h-full w-full object-cover transition-transform duration-700 ${
+                        activeProject === idx ? 'scale-100' : 'scale-110 grayscale-[50%]'
+                      }`}
+                    />
+                  ) : (
+                    <div className={`h-full w-full bg-gray-800 flex items-center justify-center transition-transform duration-700 ${
+                      activeProject === idx ? 'scale-100' : 'scale-110'
+                    }`}>
+                      <span className="text-4xl">🏗️</span>
+                    </div>
+                  )}
                   <div className={`absolute inset-0 bg-black/30 transition-opacity duration-500 ${
                     activeProject === idx ? 'opacity-20' : 'opacity-60'
                   }`} />
@@ -417,15 +486,15 @@ export default function Home() {
             <AnimatedSection>
               <div className="mb-4 flex items-center gap-3 text-blue">
                 <span className="h-px w-8 bg-blue"></span>
-                <span className="text-sm font-bold uppercase tracking-widest">Expertise</span>
+                <span className="text-sm font-bold uppercase tracking-widest">{homeGeneral?.services?.subtitle || 'Expertise'}</span>
               </div>
               <h2 className="font-heading text-5xl font-black leading-tight md:text-6xl">
-                Our Craft.
+                {homeGeneral?.services?.title || 'Our Craft.'}
               </h2>
             </AnimatedSection>
             <AnimatedSection delay={0.1}>
               <p className="max-w-sm text-lg text-gray-400">
-                A suite of specialized conservation services tailored to the unique needs of historic fabric.
+                {homeGeneral?.services?.description || 'A suite of specialized conservation services tailored to the unique needs of historic fabric.'}
               </p>
             </AnimatedSection>
           </div>

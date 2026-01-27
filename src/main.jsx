@@ -21,19 +21,34 @@ import AdminTestimonials from './pages/admin/AdminTestimonials'
 import AdminClients from './pages/admin/AdminClients'
 import AdminAchievements from './pages/admin/AdminAchievements'
 import AdminBlog from './pages/admin/AdminBlog'
+import AdminHero from './pages/admin/AdminHero'
+import AdminStats from './pages/admin/AdminStats'
+import AdminAbout from './pages/admin/AdminAbout'
+import AdminContact from './pages/admin/AdminContact'
+import AdminHomeGeneral from './pages/admin/AdminHomeGeneral'
+import AdminServicesGeneral from './pages/admin/AdminServicesGeneral'
+import AdminProjectsGeneral from './pages/admin/AdminProjectsGeneral'
+import AdminFooter from './pages/admin/AdminFooter'
 
 // Context Provider
 import { ContentProvider } from './context/ContentContext'
 import { AuthProvider } from './context/AuthContext'
+import { ToastProvider } from './context/ToastContext'
+import { ConfirmProvider } from './context/ConfirmContext'
 import Login from './pages/Login'
 import ProtectedRoute from './components/ProtectedRoute'
+
+import ScrollToTop from './components/ScrollToTop'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <ContentProvider>
-        <BrowserRouter>
-          <Routes>
+      <ToastProvider>
+        <ConfirmProvider>
+          <ContentProvider>
+          <BrowserRouter>
+            <ScrollToTop />
+            <Routes>
             {/* Public Routes */}
             <Route path="/" element={<AppShell />}>
               <Route index element={<Home />} />
@@ -61,10 +76,20 @@ createRoot(document.getElementById('root')).render(
               <Route path="clients" element={<AdminClients />} />
               <Route path="achievements" element={<AdminAchievements />} />
               <Route path="blog" element={<AdminBlog />} />
+              <Route path="hero" element={<AdminHero />} />
+              <Route path="stats" element={<AdminStats />} />
+              <Route path="about" element={<AdminAbout />} />
+              <Route path="contact" element={<AdminContact />} />
+              <Route path="home-general" element={<AdminHomeGeneral />} />
+              <Route path="services-general" element={<AdminServicesGeneral />} />
+              <Route path="projects-general" element={<AdminProjectsGeneral />} />
+              <Route path="footer" element={<AdminFooter />} />
             </Route>
           </Routes>
-        </BrowserRouter>
-      </ContentProvider>
+          </BrowserRouter>
+          </ContentProvider>
+        </ConfirmProvider>
+      </ToastProvider>
     </AuthProvider>
   </StrictMode>,
 )

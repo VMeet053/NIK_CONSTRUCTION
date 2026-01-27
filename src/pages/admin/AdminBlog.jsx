@@ -1,11 +1,16 @@
 
 import { useState } from 'react';
 import { useContent } from '../../context/ContentContext';
+import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 import AdminTable from '../../components/AdminTable';
 import EditModal from '../../components/EditModal';
+import AdminPageHeader from '../../components/AdminPageHeader';
 
 export default function AdminBlog() {
   const { articles, updateArticle, setArticles, updateImage } = useContent();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
 
@@ -34,21 +39,35 @@ export default function AdminBlog() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (item) => {
-    if (window.confirm('Are you sure you want to delete this article?')) {
-      setArticles(prev => prev.filter(a => a.id !== item.id));
+  const handleDelete = async (item) => {
+    if (await confirm({
+      title: 'Delete Article',
+      message: 'Are you sure you want to delete this article?'
+    })) {
+      try {
+        setArticles(prev => prev.filter(a => a.id !== item.id));
+        showToast('Article deleted successfully', 'success');
+      } catch (error) {
+        showToast('Failed to delete article', 'error');
+      }
     }
   };
 
   const handleSave = (formData) => {
-    if (currentItem.id) {
-      updateArticle(currentItem.id, formData);
-    } else {
-      setArticles(prev => [...prev, {
-        ...formData,
-        id: Date.now(),
-        image: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800' // Default
-      }]);
+    try {
+      if (currentItem.id) {
+        updateArticle(currentItem.id, formData);
+        showToast('Article updated successfully', 'success');
+      } else {
+        setArticles(prev => [...prev, {
+          ...formData,
+          id: Date.now(),
+          image: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800' // Default
+        }]);
+        showToast('Article created successfully', 'success');
+      }
+    } catch (error) {
+      showToast('Failed to save article', 'error');
     }
   };
 
@@ -61,7 +80,12 @@ export default function AdminBlog() {
       if (file) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          updateImage('articles', item.id, reader.result);
+          try {
+            updateImage('articles', item.id, reader.result);
+            showToast('Image updated successfully', 'success');
+          } catch (error) {
+            showToast('Failed to update image', 'error');
+          }
         };
         reader.readAsDataURL(file);
       }
@@ -69,20 +93,25 @@ export default function AdminBlog() {
     input.click();
   };
 
+  const categories = [...new Set(articles.map(a => a.category))].filter(Boolean);
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Blog Management</h2>
+      <AdminPageHeader 
+        title="Blog Management" 
+        stats={`${articles.length} Articles`}
+        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>}
+      >
         <button 
           onClick={handleAdd}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-md"
+          className="px-4 py-2 bg-amber-500 text-black rounded-lg hover:bg-amber-400 transition-colors flex items-center gap-2 shadow-md font-bold"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
           Add New Article
         </button>
-      </div>
+      </AdminPageHeader>
 
       <AdminTable 
         columns={columns} 
@@ -90,6 +119,10 @@ export default function AdminBlog() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onImageChange={handleImageChange}
+        searchable={true}
+        filters={[
+          { key: 'category', label: 'Category', options: categories }
+        ]}
       />
 
       <EditModal
