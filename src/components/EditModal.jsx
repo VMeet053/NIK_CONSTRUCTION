@@ -52,6 +52,69 @@ export default function EditModal({ isOpen, onClose, onSave, data, fields, title
                     rows={4}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
+                ) : field.type === 'gallery' ? (
+                  <div className="space-y-3">
+                    <textarea
+                      name={field.name}
+                      value={formData[field.name] || ''}
+                      onChange={handleChange}
+                      rows={4}
+                      placeholder="Comma-separated image URLs"
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    />
+                    <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg border border-gray-300 inline-flex items-center justify-center transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-600">Upload Images</span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files || []);
+                          if (files.length) {
+                            Promise.all(
+                              files.map(async (file) => {
+                                const fd = new FormData();
+                                fd.append('image', file);
+                                const resp = await fetch('http://localhost:5000/api/upload', { method: 'POST', body: fd });
+                                if (!resp.ok) throw new Error('Upload failed');
+                                const data = await resp.json();
+                                return data.url;
+                              })
+                            ).then((urls) => {
+                              const existing = (formData[field.name] || '')
+                                .split(',')
+                                .map((s) => s.trim())
+                                .filter((s) => s.length > 0);
+                              const merged = [...existing, ...urls];
+                              setFormData((prev) => ({ ...prev, [field.name]: merged.join(',') }));
+                            }).catch(() => {
+                              // no-op: keep state unchanged on failure
+                            });
+                          }
+                        }}
+                      />
+                    </label>
+                    {(formData[field.name] || '')
+                      .split(',')
+                      .map((s) => s.trim())
+                      .filter((s) => s.length > 0).length > 0 && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {(formData[field.name] || '')
+                          .split(',')
+                          .map((s) => s.trim())
+                          .filter((s) => s.length > 0)
+                          .map((u, idx) => (
+                            <div key={idx} className="relative h-24 w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center">
+                              <img src={u} alt="Preview" className="h-full w-full object-cover" />
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
                 ) : field.type === 'image' ? (
                     <div className="space-y-3">
                         <div className="flex gap-2">
@@ -75,11 +138,16 @@ export default function EditModal({ isOpen, onClose, onSave, data, fields, title
                                     onChange={(e) => {
                                         const file = e.target.files[0];
                                         if (file) {
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => {
-                                                setFormData(prev => ({ ...prev, [field.name]: reader.result }));
-                                            };
-                                            reader.readAsDataURL(file);
+                                            const fd = new FormData();
+                                            fd.append('image', file);
+                                            fetch('http://localhost:5000/api/upload', { method: 'POST', body: fd })
+                                              .then(resp => resp.json())
+                                              .then(data => {
+                                                if (data?.url) {
+                                                  setFormData(prev => ({ ...prev, [field.name]: data.url }));
+                                                }
+                                              })
+                                              .catch(() => {});
                                         }
                                     }}
                                 />

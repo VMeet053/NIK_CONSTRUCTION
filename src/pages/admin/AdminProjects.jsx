@@ -20,15 +20,24 @@ export default function AdminProjects() {
     { key: 'category', label: 'Category' },
     { key: 'location', label: 'Location' },
     { key: 'year', label: 'Year' },
+    { key: 'slug', label: 'Slug' },
   ];
 
   const formFields = [
+    { name: 'slug', label: 'Slug (auto from title if empty)' },
     { name: 'title', label: 'Title' },
     { name: 'category', label: 'Category' },
     { name: 'location', label: 'Location' },
     { name: 'year', label: 'Year' },
+    { name: 'client', label: 'Client' },
+    { name: 'status', label: 'Status' },
     { name: 'history', label: 'History (Description)', type: 'textarea' },
     { name: 'summary', label: 'Summary' },
+    { name: 'challenges', label: 'Challenges', type: 'textarea' },
+    { name: 'intervention', label: 'Intervention', type: 'textarea' },
+    { name: 'outcome', label: 'Outcome', type: 'textarea' },
+    { name: 'gallery', label: 'Gallery (comma-separated image URLs)', type: 'gallery' },
+    { name: 'image', label: 'Main Image URL', type: 'image' },
   ];
 
   const handleEdit = (item) => {
@@ -57,13 +66,30 @@ export default function AdminProjects() {
 
   const handleSave = (formData) => {
     try {
+      // normalize slug
+      const slug = (formData.slug && formData.slug.trim().length > 0)
+        ? formData.slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+        : (formData.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      // normalize gallery
+      let gallery = formData.gallery;
+      if (typeof gallery === 'string') {
+        gallery = gallery
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s.length > 0);
+      }
+      const payload = {
+        ...formData,
+        slug,
+        gallery,
+      };
       if (currentItem.id) {
-        updateProject(currentItem.id, formData);
+        updateProject(currentItem.id, { ...payload, id: currentItem.id });
         showToast('Project updated successfully', 'success');
       } else {
         addProject({
-          ...formData,
-          image: 'https://images.unsplash.com/photo-1548625361-98822605e55d?w=800' // Default image
+          ...payload,
+          image: payload.image || 'https://images.unsplash.com/photo-1548625361-98822605e55d?w=800'
         });
         showToast('Project created successfully', 'success');
       }
