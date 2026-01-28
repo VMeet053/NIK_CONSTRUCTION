@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
 import { useContent } from '../context/ContentContext'
 import AnimatedSection from '../components/AnimatedSection'
@@ -6,6 +7,10 @@ import StaggeredText from '../components/StaggeredText'
 
 const ProjectItem = ({ project, idx }) => {
   const isEven = idx % 2 === 0
+  const slug = (project.slug || project.title || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
 
   return (
     <motion.div
@@ -18,7 +23,7 @@ const ProjectItem = ({ project, idx }) => {
     >
       {/* Visual Section - Large Image */}
       <div className="relative w-full lg:w-3/5">
-        <div className="group relative aspect-[16/10] overflow-hidden rounded-3xl shadow-2xl">
+        <Link to={`/projects/${slug}`} className="group relative aspect-[16/10] overflow-hidden rounded-3xl shadow-2xl block">
           {project.image ? (
             <motion.img
               src={project.image}
@@ -33,7 +38,7 @@ const ProjectItem = ({ project, idx }) => {
             </div>
           )}
           {/* Detailed Image Overlay */}
-          <div className="absolute inset-0 bg-black/20 transition-opacity duration-300 group-hover:bg-black/10" />
+          <div className="pointer-events-none absolute inset-0 bg-black/20 transition-opacity duration-300 group-hover:bg-black/10" />
 
           {/* Floating Year Badge */}
           <div className="absolute top-6 right-6 overflow-hidden rounded-xl border border-white/20 bg-black/30 backdrop-blur-md">
@@ -41,7 +46,7 @@ const ProjectItem = ({ project, idx }) => {
               {project.year}
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Decorative Element */}
         <div className={`absolute -bottom-10 -z-10 h-64 w-64 rounded-full bg-blue/5 blur-3xl ${isEven ? '-left-10' : '-right-10'
@@ -96,13 +101,13 @@ const ProjectItem = ({ project, idx }) => {
             </div>
           </div>
 
-          <motion.button
-            whileHover={{ x: 10 }}
-            className="mt-4 flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-black hover:text-blue"
+          <Link
+            to={`/projects/${slug}`}
+            className="mt-4 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-black hover:text-blue transition-colors"
           >
             Explore Case Study
             <span className="text-xl">→</span>
-          </motion.button>
+          </Link>
         </div>
       </div>
     </motion.div>
@@ -128,50 +133,45 @@ export default function Projects() {
           src="/bgg.png"
           alt="Vintage Background"
           className="h-full w-full object-cover opacity-100"
-          onError={(e) => {
-            const target = e.target;
-            if (target.src.endsWith('bgg.png')) {
-               target.src = 'https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=2000&auto=format&fit=crop';
-            }
-          }}
         />
       </div>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-black py-16 text-center text-white lg:py-24">
-        <motion.div 
-            className="absolute inset-0 bg-cover bg-center opacity-30 fixed-bg"
-            initial={{ backgroundImage: `url(${projectsPageContent?.hero?.image || 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1920'})` }}
-            animate={{ backgroundImage: `url(${projectsPageContent?.hero?.image || 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=1920'})` }}
+      <section className="relative overflow-hidden bg-black py-24 text-center text-white lg:py-40 min-h-[60vh] flex flex-col justify-center">
+        <img
+          src={projectsPageContent?.hero?.image || '/bgg.png'}
+          alt="Projects Hero"
+          className="absolute inset-0 h-full w-full object-cover opacity-50"
+          onError={(e) => { e.target.src = '/bgg.png' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-white" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/60 to-black/20" />
 
         <div className="relative z-10 mx-auto max-w-4xl px-6">
           <motion.span
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 block text-sm font-bold uppercase tracking-[0.3em] text-blue"
+            className="mb-6 block text-sm font-bold uppercase tracking-[0.3em] text-blue drop-shadow-md"
           >
             {projectsPageContent?.hero?.subtitle !== undefined ? projectsPageContent.hero.subtitle : "Our Portfolio"}
           </motion.span>
           <StaggeredText
             text={projectsPageContent?.hero?.title !== undefined ? projectsPageContent.hero.title : "Preserving the Past"}
-            className="font-heading mb-6 text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black"
+            className="font-heading mb-6 text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black drop-shadow-2xl"
           />
-          <p className="mx-auto max-w-2xl text-lg sm:text-xl font-light text-gray-200">
+          <p className="mx-auto max-w-2xl text-lg sm:text-xl font-light text-gray-200 drop-shadow-lg">
             {projectsPageContent?.hero?.description !== undefined ? projectsPageContent.hero.description : "A journey through our archival documentation, structural conservation, and adaptive reuse projects."}
           </p>
         </div>
       </section>
 
       {/* Filter Section */}
-      <section className="sticky top-20 z-40 bg-white/80 backdrop-blur-md border-b border-gray/20 py-4">
+      <section className="sticky top-20 z-40 bg-white/10 backdrop-blur-md border-b border-white/10 py-4">
         <div className="mx-auto flex max-w-7xl justify-start md:justify-center gap-2 px-6 overflow-x-auto no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`whitespace-nowrap rounded-full px-6 py-2 text-sm font-bold uppercase tracking-wider transition-all hover:bg-black hover:text-white ${activeCategory === cat ? 'bg-black text-white' : 'bg-gray-100 text-charcoal'
+              className={`whitespace-nowrap rounded-full px-6 py-2 text-sm font-bold uppercase tracking-wider transition-all hover:bg-black hover:text-white ${activeCategory === cat ? 'bg-black text-white' : 'bg-white/40 text-black backdrop-blur-sm border border-white/20'
                 }`}
             >
               {cat}
