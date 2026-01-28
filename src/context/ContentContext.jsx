@@ -131,8 +131,16 @@ export const ContentProvider = ({ children }) => {
   const updateImage = async (sectionKey, itemId, fileOrUrl) => {
     try {
         let imageUrl = fileOrUrl;
+        // If it's a File object, upload
         if (typeof fileOrUrl !== 'string') {
              imageUrl = await uploadFile(fileOrUrl);
+        }
+        // If it's a data URL string, upload to get a persistent URL
+        if (typeof fileOrUrl === 'string' && fileOrUrl.startsWith('data:')) {
+            // Convert dataURL to Blob
+            const res = await fetch(fileOrUrl);
+            const blob = await res.blob();
+            imageUrl = await uploadFile(new File([blob], `upload-${Date.now()}.png`, { type: blob.type || 'image/png' }));
         }
 
         if (sectionKey === 'heroContent' || sectionKey === 'hero') {

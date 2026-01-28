@@ -461,8 +461,8 @@ export default function Home() {
       </section>
 
       {/* 4. India Map Section */}
-      {/* <AnimatedSection className="mx-auto max-w-7xl px-6 py-32 lg:px-8">
-        <motion.div className="mb-16 text-center">
+      <AnimatedSection className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+        <motion.div className="mb-8 text-center">
           <div className="mb-4 text-sm font-semibold uppercase tracking-wider text-blue">
             Our Reach
           </div>
@@ -471,9 +471,9 @@ export default function Home() {
           </h2>
         </motion.div>
         <IndiaMap />
-      </AnimatedSection> */}
+      </AnimatedSection>
 
-      {/* 5. Testimonials */}
+       {/* 5. Testimonials */}
       <Testimonials />
 
       {/* 6. Clients */}
